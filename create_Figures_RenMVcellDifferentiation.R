@@ -2,142 +2,148 @@
 #pkgInstall("synapseClient")
 #install.packages("rstudioapi")
 
-library(synapseClient)
+library(synapser)
 library(plyr);library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(ggrepel)
+library(here)
 `%nin%`<-Negate(`%in%`)
 
-##################################################################################################################T
-# Get user input ------------
-##################################################################################################################T
-#User input
-Synapse_UID<-""
-Synapse_password<-""
-dir_project<-""
-synapse_ids<-c("syn14619049")#c("synID_1","synID_2",...,"synID_n") ## requires user input
-variable_names<-c("Phospho_baseline_g_day") ## optional user input
+synLogin() ## requires user input
 
-##################################################################################################################T
-# make connection to synapse, set directories ------------
-##################################################################################################################T
-synapseLogin(Synapse_UID, Synapse_password) ## requires user input
-c.time<-Sys.time()%>%as.character()%>%gsub("-","",.)%>%gsub(" ","_",.)%>%gsub(":","",.)
-#dir_project<-"/Users/nienke/Dropbox (HMS)/CBDM-SORGER/Collaborations/Dark_kinome/" ##requires user input
-paste0(dir_project,paste0(rstudioapi::getActiveDocumentContext()$path%>%dirname()%>%basename()))
-dir_c_script<-paste0(dir_project,paste0(rstudioapi::getActiveDocumentContext()$path%>%dirname()%>%basename()))
-dir_log<-paste0(dir_project,paste0(rstudioapi::getActiveDocumentContext()$path%>%dirname()%>%basename()),"_SynapseLog")
-tempdir<-paste0(dir_project,"temp_local_synapse_files",Sys.time()%>%as.character()%>%gsub("-","",.)%>%gsub(" ","_",.)%>%gsub(":","",.))
-dir.create(tempdir, showWarnings = TRUE, recursive = TRUE)
-#synapse_ids<-c("syn12074621","syn12074611")#c("synID_1","synID_2",...,"synID_n") ## requires user input
-#variable_names<-NA#optional: change to c("myname_1","myname_2",...,"myname_n") ## optional user input
-##################################################################################################################T
-# get info of files copied in for user to check ------------
-##################################################################################################################T
-file_info.l<-list()
-i=0
-for(syn_id in synapse_ids){
-  i=i+1
-  syn_file<-synGet(syn_id, downloadFile =F, downloadLocation = tempdir, ifcollision = "overwrite.local")
-  c.info<-list()
-  c.info$file_name<-syn_file[[1]]$name
-  c.info$R_variable_name<-ifelse(is.na(variable_names)==T,tools::file_path_sans_ext(c.info$file_name),variable_names[i])
-  c.info$id<-syn_file[[1]]$id%>%as.character(.)
-  c.info$descreption<-syn_file[[1]]$description
-  c.info$url<-syn_file@synapseWebUrl
-  c.info$version_number<-syn_file[[1]]$versionNumber
-  c.info$versions_label<-syn_file[[1]]$versionLabel
-  c.info$DateTime_modified<-syn_file[[1]]$modifiedOn
-  file_info.l[[i]]<-c.info%>%as.data.frame(.,stringsAsFactors=F)
-}
-file_info<-file_info.l%>%bind_rows(.)
+# ##################################################################################################################T
+# # Get user input ------------
+# ##################################################################################################################T
+# #User input
+# dir_project<-here()
+# synapse_ids<-c("syn14619049")#c("synID_1","synID_2",...,"synID_n") ## requires user input
+# variable_names<-c("Phospho_baseline_g_day") ## optional user input
+# 
+# ##################################################################################################################T
+# # make connection to synapse, set directories ------------
+# ##################################################################################################################T
+# 
+# c.time<-Sys.time()%>%as.character()%>%gsub("-","",.)%>%gsub(" ","_",.)%>%gsub(":","",.)
+# #dir_project<-"/Users/nienke/Dropbox (HMS)/CBDM-SORGER/Collaborations/Dark_kinome/" ##requires user input
+# paste0(dir_project,paste0(rstudioapi::getActiveDocumentContext()$path%>%dirname()%>%basename()))
+# dir_c_script<-paste0(dir_project,paste0(rstudioapi::getActiveDocumentContext()$path%>%dirname()%>%basename()))
+# dir_log<-paste0(dir_project,paste0(rstudioapi::getActiveDocumentContext()$path%>%dirname()%>%basename()),"_SynapseLog")
+# tempdir<-paste0(dir_project,"temp_local_synapse_files",Sys.time()%>%as.character()%>%gsub("-","",.)%>%gsub(" ","_",.)%>%gsub(":","",.))
+# dir.create(tempdir, showWarnings = TRUE, recursive = TRUE)
+# #synapse_ids<-c("syn12074621","syn12074611")#c("synID_1","synID_2",...,"synID_n") ## requires user input
+# #variable_names<-NA#optional: change to c("myname_1","myname_2",...,"myname_n") ## optional user input
+# ##################################################################################################################T
+# # get info of files copied in for user to check ------------
+# ##################################################################################################################T
+# file_info.l<-list()
+# i=0
+# for(syn_id in synapse_ids){
+#   i=i+1
+#   syn_file<-synGet(syn_id, downloadFile =F, downloadLocation = tempdir, ifcollision = "overwrite.local")
+#   c.info<-list()
+#   c.info$file_name<-syn_file[[1]]$name
+#   c.info$R_variable_name<-ifelse(is.na(variable_names)==T,tools::file_path_sans_ext(c.info$file_name),variable_names[i])
+#   c.info$id<-syn_file[[1]]$id%>%as.character(.)
+#   c.info$descreption<-syn_file[[1]]$description
+#   c.info$url<-syn_file@synapseWebUrl
+#   c.info$version_number<-syn_file[[1]]$versionNumber
+#   c.info$versions_label<-syn_file[[1]]$versionLabel
+#   c.info$DateTime_modified<-syn_file[[1]]$modifiedOn
+#   file_info.l[[i]]<-c.info%>%as.data.frame(.,stringsAsFactors=F)
+# }
+# file_info<-file_info.l%>%bind_rows(.)
+# 
+# writeLines(
+#   paste0("to be loaded:\n ",
+#          file_info$file_name%>%toString()%>%gsub(",","\n",.),
+#          "\n===========================================================
+#          \nplease check 'file_info' before continuing loading process"))
+# 
+# ##################################################################################################################T
+# # download files from Synapse ------------
+# ##################################################################################################################T
+# 
+# for(syn_id in synapse_ids){
+#   syn_file<-synGet(syn_id, downloadFile =T, downloadLocation = tempdir, ifcollision = "overwrite.local")
+#   c.info<-list()
+#   c.info$file_name<-syn_file[[1]]$name
+#   c.info$R_variable_name<-ifelse(is.na(variable_names)==T,tools::file_path_sans_ext(c.info$file_name),variable_names[i])
+#   c.info$id<-syn_file[[1]]$id
+#   c.info$descreption<-syn_file[[1]]$description
+#   c.info$url<-syn_file@synapseWebUrl
+#   c.info$version_number<-syn_file[[1]]$versionNumber
+#   c.info$versions_label<-syn_file[[1]]$versionLabel
+#   c.info$DateTime_modified<-syn_file[[1]]$modifiedOn
+#   file_info.l[[i]]<-c.info%>%as.data.frame(.,stringsAsFactors=F)
+# }
+# file_info<-file_info.l%>%bind_rows(.)
+# synapseLogout()
+# 
+# ##################################################################################################################T
+# # write logfile ------------
+# ##################################################################################################################T
+# setwd(dir_c_script)
+# paste0(dir_log)%nin%list.files()
+# if(dir_log%nin%list.files()){
+#   dir.create(dir_log, showWarnings = TRUE, recursive = TRUE)}
+# 
+# currentscript_insert<-paste0("_",
+#                              rstudioapi::getActiveDocumentContext()$path%>%basename()%>%gsub(".R","",.),
+#                              "_")
+# logfile_name<-Sys.time()%>%as.character()%>%gsub("-","",.)%>%
+#   gsub(" ",currentscript_insert,.)%>%gsub(":","",.)%>%paste0(.,"GMT")%>%
+#   paste0("FilesUsed_",.,".csv")
+# 
+# #Sys.time()%>%as.character()%>%gsub("-","",.)%>%
+# #  gsub(" ",currentscript_insert,.)%>%gsub(":","",.)%>%paste0(.,"GMT")%>%
+# #  paste0("FilesUsed_",.,".csv")
+# 
+# setwd(dir_log)
+# write.csv(file_info,file = logfile_name,row.names = F)
+# 
+# ##################################################################################################################T
+# # load data into R ------------
+# ##################################################################################################################T
+# ##!!modify to allow more datatypes
+# setwd(tempdir)
+# file_info<-file_info%>%arrange(file_name)
+# files<-ifelse(list.files()%>%sort()==file_info$file_name%>%as.character(),
+#               list.files(),"something went wrong")
+# i=0
+# for(c.file in files){
+#   i=i+1
+#   c.varname<-file_info$R_variable_name[i]%>%as.character()
+#   c.file<-read.csv(c.file, stringsAsFactors = F) #!!modify to allow more datatypes
+#   assign(c.varname,c.file)
+# }
+# ##################################################################################################################T
+# # remove excess variables ------------
+# ##################################################################################################################T
+# vars_to_keep<-c(c("%nin%","file_info",file_info$R_variable_name),
+#                 "Synapse_UID","Synapse_password", "dir_project","tempdir",
+#                 "dir_log","currentscript_insert","dir_c_script")
+# rm(list = ls()[ls()%nin%vars_to_keep])
+# 
+# ##################################################################################################################T
 
-writeLines(
-  paste0("to be loaded:\n ",
-         file_info$file_name%>%toString()%>%gsub(",","\n",.),
-         "\n===========================================================
-         \nplease check 'file_info' before continuing loading process"))
+file_info = synGet("syn14619049")
+Phospho_baseline_g_day = read.csv(file_info$path, stringsAsFactors = F)
 
-##################################################################################################################T
-# download files from Synapse ------------
-##################################################################################################################T
-
-for(syn_id in synapse_ids){
-  syn_file<-synGet(syn_id, downloadFile =T, downloadLocation = tempdir, ifcollision = "overwrite.local")
-  c.info<-list()
-  c.info$file_name<-syn_file[[1]]$name
-  c.info$R_variable_name<-ifelse(is.na(variable_names)==T,tools::file_path_sans_ext(c.info$file_name),variable_names[i])
-  c.info$id<-syn_file[[1]]$id
-  c.info$descreption<-syn_file[[1]]$description
-  c.info$url<-syn_file@synapseWebUrl
-  c.info$version_number<-syn_file[[1]]$versionNumber
-  c.info$versions_label<-syn_file[[1]]$versionLabel
-  c.info$DateTime_modified<-syn_file[[1]]$modifiedOn
-  file_info.l[[i]]<-c.info%>%as.data.frame(.,stringsAsFactors=F)
-}
-file_info<-file_info.l%>%bind_rows(.)
-synapseLogout()
-
-##################################################################################################################T
-# write logfile ------------
-##################################################################################################################T
-setwd(dir_c_script)
-paste0(dir_log)%nin%list.files()
-if(dir_log%nin%list.files()){
-  dir.create(dir_log, showWarnings = TRUE, recursive = TRUE)}
-
-currentscript_insert<-paste0("_",
-                             rstudioapi::getActiveDocumentContext()$path%>%basename()%>%gsub(".R","",.),
-                             "_")
-logfile_name<-Sys.time()%>%as.character()%>%gsub("-","",.)%>%
-  gsub(" ",currentscript_insert,.)%>%gsub(":","",.)%>%paste0(.,"GMT")%>%
-  paste0("FilesUsed_",.,".csv")
-
-#Sys.time()%>%as.character()%>%gsub("-","",.)%>%
-#  gsub(" ",currentscript_insert,.)%>%gsub(":","",.)%>%paste0(.,"GMT")%>%
-#  paste0("FilesUsed_",.,".csv")
-
-setwd(dir_log)
-write.csv(file_info,file = logfile_name,row.names = F)
-
-##################################################################################################################T
-# load data into R ------------
-##################################################################################################################T
-##!!modify to allow more datatypes
-setwd(tempdir)
-file_info<-file_info%>%arrange(file_name)
-files<-ifelse(list.files()%>%sort()==file_info$file_name%>%as.character(),
-              list.files(),"something went wrong")
-i=0
-for(c.file in files){
-  i=i+1
-  c.varname<-file_info$R_variable_name[i]%>%as.character()
-  c.file<-read.csv(c.file, stringsAsFactors = F) #!!modify to allow more datatypes
-  assign(c.varname,c.file)
-}
-##################################################################################################################T
-# remove excess variables ------------
-##################################################################################################################T
-vars_to_keep<-c(c("%nin%","file_info",file_info$R_variable_name),
-                "Synapse_UID","Synapse_password", "dir_project","tempdir",
-                "dir_log","currentscript_insert","dir_c_script")
-rm(list = ls()[ls()%nin%vars_to_keep])
-
-##################################################################################################################T
 
 ##################################################################################################################T
 # determine AUC phosphorylation over time ------------
 ##################################################################################################################T
-Phospho_baseline_g_gene<-Phospho_baseline_g_day%>%
-  group_by(Gene_Symbol, gene_id, uniprot_id)%>%
+Phospho_baseline_g_gene <- Phospho_baseline_g_day %>%
+  group_by(Gene_Symbol, gene_id, uniprot_id) %>%
   summarize(variance=var(score_mean,na.rm=T),
             mean=mean(score_mean,na.rm=T),
             max=max(score_mean,na.rm=T),
             min=min(score_mean,na.rm=T),
             is_kinase=unique(is_kinase),
-            is_dark_kinase=unique(is_dark_kinase))%>%
-  ungroup()%>%as.data.frame()
+            is_dark_kinase=unique(is_dark_kinase)) %>%
+  ungroup() %>%
+  as.data.frame()
 
 # calculate AUC
 AUC_split<-dlply(Phospho_baseline_g_day,.(Gene_Symbol,gene_id,uniprot_id),c)
@@ -167,7 +173,7 @@ for(gene_index in 1:length(AUC_split)){
   c.result$n_timepoints<-n_timepoints
   c.result<-as.data.frame(c.result)
   AUC_table[[gene_index]]<-c.result
-  print(paste0(gene_index,"-",length(AUC_split)))
+  # print(paste0(gene_index,"-",length(AUC_split)))
 }
 
 AUCtable_bound<-AUC_table%>%bind_rows()
@@ -317,7 +323,9 @@ DarkKinase_phospho<-Phospho_baseline_g_day%>%
   filter(is_dark_kinase==TRUE)%>%
   dlply(.,.(Gene_Symbol,gene_id,uniprot_id),c)
 
-for(n in 1){#:length(DarkKinase_phospho)){
+dir.create(here('ReNcell'), showWarnings = F)
+
+for(n in 1:length(DarkKinase_phospho)){#:){
   c.df<-DarkKinase_phospho[[n]]%>%as.data.frame()
   c.symbol<-c.df$Gene_Symbol%>%unique()
   c.uniprotID<-c.df$uniprot_id%>%unique() 
@@ -325,6 +333,10 @@ for(n in 1){#:length(DarkKinase_phospho)){
     arrange(symbol_uniprot)
   c.values<-legend_df$colors
   c.filename<-paste0("Example_fig_ReNcell_",c.symbol,"_",c.uniprotID,".pdf")
+  
+  if (! (c.symbol %in% all_kinases$symbol)) {
+    print(c.symbol)
+  }
   
   plot_DK_phospho<-
     ggplot(Phospho_baseline_g_day%>%filter(Gene_Symbol%in% ref_kinase),
@@ -349,9 +361,7 @@ for(n in 1){#:length(DarkKinase_phospho)){
     labs(title=paste0(c.symbol," phosphorylation\ncompared to EGFR & HIPK2 phosphorylation"),
          x="Day",y="Relative phosphorylation protein")
   
-  setwd(paste0(dir_c_script,"/Example_fig_ReNcell/"))
-  #ggsave(plot_DK_phospho,file=c.filename,device = "pdf", height = 6,width = 8,
-  #       useDingbats=FALSE)
+  ggsave(plot_DK_phospho,file=here('ReNcell',paste0(c.symbol, '.svg')), height = 6,width = 8)
   print(paste0(n,"-",length(DarkKinase_phospho)))
 }
 plot_DK_phospho
@@ -361,7 +371,3 @@ plot_DK_phospho
 ##################################################################################################################T
 setwd(dir_project)
 unlink(tempdir,recursive =T)
-
-
-
-
