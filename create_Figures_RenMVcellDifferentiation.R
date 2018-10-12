@@ -3,11 +3,13 @@
 #install.packages("rstudioapi")
 
 library(synapser)
-library(plyr);library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(ggrepel)
-library(here)
+library(plyr);
+library(dplyr);
+library(tidyr);
+library(ggplot2);
+library(ggrepel);
+library(here);
+library(DarkKinaseTools);
 `%nin%`<-Negate(`%in%`)
 
 synLogin() ## requires user input
@@ -198,7 +200,7 @@ AUC_plot<-
         plot.title = element_text(hjust = 0.5),
         axis.line = element_line(colour = "black") )+
   labs(title="distribution AUC protein abundance", x="AUC",y="Count")
-setwd(dir_c_script)
+# setwd(dir_c_script)
 ggsave(AUC_plot,filename = "ReNMV_AUC_protein_abundance.pdf",
        device = "pdf",height = 6, width=8)
 
@@ -224,7 +226,7 @@ AUC_plot_2D_FC<-
        y="FoldChange\nover mean expression")
 
 AUC_plot_2D_FC
-setwd(dir_c_script)
+# setwd(dir_c_script)
 ggsave(AUC_plot_2D_FC,filename = "ReNMV_AUC_vs_RelativeExpression.pdf",
        device = "pdf",height = 6, width=8)
 
@@ -353,18 +355,13 @@ for(n in 1:length(DarkKinase_phospho)){#:){
     scale_color_manual("Symbol.UniprotID", values = c.values)+ 
     scale_y_continuous(limits=c(0,30),expand=c(0,0))+
     scale_x_continuous(expand=c(0,0.15))+
-    theme_bw()+
-    theme(axis.text.x = element_text(angle = 0, hjust = 0.5 ),
-          axis.text.y = element_text(angle = 0, hjust = 0.5 ),
-          plot.title = element_text(hjust = 0.5),
-          axis.line = element_line(colour = "black") )+
+    BerginskiRMisc::theme_berginski() +
     labs(title=paste0(c.symbol," phosphorylation\ncompared to EGFR & HIPK2 phosphorylation"),
          x="Day",y="Relative phosphorylation protein")
   
-  ggsave(plot_DK_phospho,file=here('ReNcell',paste0(c.symbol, '.svg')), height = 6,width = 8)
+  ggsave(plot_DK_phospho,file=here('ReNcell',paste0(c.symbol, '.svg')), height = 3,width = 5)
   print(paste0(n,"-",length(DarkKinase_phospho)))
 }
-plot_DK_phospho
 
 ##################################################################################################################T
 # remove tempdir  ------------
